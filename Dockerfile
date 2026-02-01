@@ -1,7 +1,6 @@
 FROM eclipse-temurin:17-jdk-alpine
 
-ENV APP_HOME=/usr/src/app
-WORKDIR $APP_HOME
+WORKDIR /usr/src/app
 
 COPY target/*.jar app.jar
 
