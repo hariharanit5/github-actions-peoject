@@ -38,14 +38,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ✅ Trivy Scan
       - name: Trivy File System Scan
         uses: aquasecurity/trivy-action@0.24.0
         with:
           scan-type: fs
           scan-ref: .
 
-      # ✅ Gitleaks Scan
       - name: Gitleaks Secret Scan
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -97,7 +95,6 @@ jobs:
       - name: Build Package
         run: mvn clean package
 
-      # ✅ SonarCloud Scan
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
         env:
@@ -120,7 +117,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # ✅ Setup Java again (because new runner)
       - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
@@ -128,9 +124,17 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      # ✅ Build jar again so target/ exists
+      # ✅ Build jar again so target exists
       - name: Build Package for Docker
         run: mvn clean package -DskipTests
+
+      # ✅ Confirm jar exists (IMPORTANT)
+      - name: List Target Folder
+        run: ls -l target/
+
+      # ✅ Setup Docker Buildx (IMPORTANT)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       # ✅ Login DockerHub
       - name: Login to DockerHub
@@ -147,6 +151,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/bankapp:latest
+          provenance: false
 
 
   # =====================================
