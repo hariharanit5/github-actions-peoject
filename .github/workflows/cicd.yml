@@ -124,15 +124,21 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      # ✅ Build jar again so target exists
+      # ✅ Build jar again (target folder must exist)
       - name: Build Package for Docker
         run: mvn clean package -DskipTests
 
-      # ✅ Confirm jar exists (IMPORTANT)
-      - name: List Target Folder
-        run: ls -l target/
+      # ✅ DEBUG: Show all files
+      - name: Show Workspace Files
+        run: ls -l
 
-      # ✅ Setup Docker Buildx (IMPORTANT)
+      # ✅ DEBUG: Confirm target exists
+      - name: Check Target Folder
+        run: |
+          echo "===== TARGET FOLDER CONTENT ====="
+          ls -l target || echo "❌ target folder NOT created"
+
+      # ✅ Setup Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -150,20 +156,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/bankapp:latest
+          tags: h2004/bankapp:latest
           provenance: false
-
-
-  # =====================================
-  # 6. Deploy Stage (Optional - Disabled)
-  # =====================================
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: docker-build-push
-  #
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Deploy to Kubernetes
-  #       run: kubectl apply -f ds.yml
