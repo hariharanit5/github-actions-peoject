@@ -99,7 +99,11 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.organization=hariharanit5
+            -Dsonar.projectKey=hariharanit5_github-actions-peoject
+            -Dsonar.host.url=https://sonarcloud.io
 
 
   # =====================================
@@ -122,32 +126,7 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v6
         with:
+          context: .
+          file: ./Dockerfile
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/bankapp:latest
-
-
-  # =====================================
-  # 6. Deploy Stage (Optional - Disabled)
-  # =====================================
-  # Enable this only when Kubernetes + KUBECONFIG is ready
-  #
-  # deploy:
-  #   runs-on: ubuntu-latest
-  #   needs: docker-build-push
-  #
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Setup kubectl
-  #       uses: azure/setup-kubectl@v3
-  #       with:
-  #         version: latest
-  #
-  #     - name: Configure kubeconfig
-  #       run: |
-  #         mkdir -p $HOME/.kube
-  #         echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
-  #
-  #     - name: Deploy to Kubernetes
-  #       run: kubectl apply -f ds.yml
