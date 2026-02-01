@@ -107,7 +107,7 @@ jobs:
 
 
   # =====================================
-  # 5. Docker Build & Push Stage (FINAL FIX)
+  # 5. Docker Build & Push Stage (FINAL GUARANTEED FIX)
   # =====================================
   docker-build-push:
     runs-on: ubuntu-latest
@@ -124,37 +124,22 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      # ✅ Build jar again (target folder must exist)
-      - name: Build Package for Docker
+      # ✅ Build Jar Again
+      - name: Build Jar File
         run: mvn clean package -DskipTests
 
-      # ✅ DEBUG: Show all files
-      - name: Show Workspace Files
-        run: ls -l
+      # ✅ Confirm Jar Exists
+      - name: Verify Target Folder
+        run: ls -l target/
 
-      # ✅ DEBUG: Confirm target exists
-      - name: Check Target Folder
-        run: |
-          echo "===== TARGET FOLDER CONTENT ====="
-          ls -l target || echo "❌ target folder NOT created"
+      # ✅ DockerHub Login (CLI Method)
+      - name: Docker Login
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
-      # ✅ Setup Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # ✅ Build Docker Image Locally
+      - name: Build Docker Image
+        run: docker build -t h2004/bankapp:latest .
 
-      # ✅ Login DockerHub
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      # ✅ Build & Push Docker Image
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: h2004/bankapp:latest
-          provenance: false
+      # ✅ Push Docker Image to DockerHub
+      - name: Push Docker Image
+        run: docker push h2004/bankapp:latest
